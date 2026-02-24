@@ -29,9 +29,10 @@ public final class HintParser {
 		if (themeIdx >= 0) {
 			int start = themeIdx + THEME_PREFIX.length();
 			if (start < plain.length()) {
-				String themePart = plain.substring(start).trim();
-				if (!themePart.isEmpty() && themePart.contains("_")) {
-					return HintPattern.of(themePart);
+				String themePart = plain.substring(start);
+				String cleaned = normalizeThemeHint(themePart);
+				if (cleaned != null) {
+					return HintPattern.of(cleaned);
 				}
 			}
 		}
@@ -71,6 +72,45 @@ public final class HintParser {
 		}
 		String s = plain.substring(left, right + 1).trim();
 		return s.contains("_") ? s : null;
+	}
+
+	/**
+	 * Normalize the part after "The theme is " into a stable pattern string
+	 * that HintPattern can accept.
+	 */
+	private static String normalizeThemeHint(String themePart) {
+		if (themePart == null) return null;
+
+		// Strip formatting / punctuation except spaces, underscores, and basic word chars.
+		String cleaned = themePart
+			.replaceAll("[^A-Za-z0-9_\\s\\-'&]", " ")
+			.trim()
+			.replaceAll("\\s+", " ");
+
+		if (cleaned.isEmpty() || !cleaned.contains("_")) return null;
+
+		// If there are any stray leading letters etc, re-run our region extractor
+		// on just this substring to keep only the core pattern with underscores.
+		Matcher m = HINT_REGION.matcher(cleaned);
+		String best = null;
+		while (m.find()) {
+			String candidate = m.group().trim();
+			if (!candidate.contains("_")) continue;
+			if (best == null || candidate.length() > best.length()) best = candidate;
+		}
+		if (best != null) cleaned = best;
+
+		// Hypixel-specific quirk: leftover 'e' from color code (§e) can appear
+		// as a leading letter before the real pattern. If we see an extra
+		// leading 'e'/'E' followed by underscores, drop it.
+		if (cleaned.length() >= 2 && cleaned.contains("_")) {
+			if ((cleaned.startsWith("e ") || cleaned.startsWith("E "))
+				|| (Character.toLowerCase(cleaned.charAt(0)) == 'e' && cleaned.charAt(1) == '_')) {
+				cleaned = cleaned.substring(1).trim();
+			}
+		}
+
+		return cleaned;
 	}
 
 	private static boolean isHintChar(char c) {

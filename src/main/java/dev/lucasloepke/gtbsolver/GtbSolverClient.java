@@ -23,6 +23,7 @@ public final class GtbSolverClient implements ClientModInitializer {
 	private static final AtomicBoolean WORDLIST_LOADED = new AtomicBoolean(false);
 	private static volatile String lastHintKey = null;
 	private static volatile boolean autoOutputEnabled = true;
+	private static volatile String lastOverlayRaw = null;
 
 	@Override
 	public void onInitializeClient() {
@@ -41,9 +42,37 @@ public final class GtbSolverClient implements ClientModInitializer {
 
 			dispatcher.register(literal("gtbsolve")
 				.executes(ctx -> {
-					printCandidatesToChat(MinecraftClient.getInstance(), lastHintKey);
+					MinecraftClient client = MinecraftClient.getInstance();
+					if (lastHintKey == null) {
+						if (client != null && client.inGameHud != null) {
+							client.inGameHud.getChatHud().addMessage(
+								Text.literal("[GTB Solver] No theme hint detected yet.").formatted(Formatting.RED)
+							);
+						}
+						return 1;
+					}
+					printCandidatesToChat(client, lastHintKey);
 					return 1;
 				})
+				.then(literal("debug")
+					.executes(ctx -> {
+						MinecraftClient client = MinecraftClient.getInstance();
+						if (client != null && client.inGameHud != null) {
+							String raw = lastOverlayRaw;
+							if (raw == null || raw.isBlank()) {
+								client.inGameHud.getChatHud().addMessage(
+									Text.literal("[GTB debug] No overlay captured yet.").formatted(Formatting.DARK_GRAY)
+								);
+							} else {
+								client.inGameHud.getChatHud().addMessage(
+									Text.literal("[GTB debug] overlay: ").formatted(Formatting.DARK_GRAY)
+										.append(Text.literal(raw).formatted(Formatting.YELLOW))
+								);
+							}
+						}
+						return 1;
+					})
+				)
 				.then(literal("toggle")
 					.executes(ctx -> {
 						autoOutputEnabled = !autoOutputEnabled;
@@ -65,9 +94,16 @@ public final class GtbSolverClient implements ClientModInitializer {
 	 * Called by mixin when the action bar (overlay) message changes.
 	 */
 	public static void onActionBarMessage(Text message) {
+		MinecraftClient client = MinecraftClient.getInstance();
+
 		if (!WORDLIST_LOADED.get()) {
 			Wordlist.ensureLoaded();
 			WORDLIST_LOADED.set(true);
+		}
+
+		// Cache latest overlay text for on-demand debugging.
+		if (message != null) {
+			lastOverlayRaw = message.getString();
 		}
 
 		HintPattern pattern = HintParser.tryParse(message);
@@ -78,7 +114,7 @@ public final class GtbSolverClient implements ClientModInitializer {
 		lastHintKey = key;
 
 		if (!autoOutputEnabled) return;
-		printCandidatesToChat(MinecraftClient.getInstance(), key);
+		printCandidatesToChat(client, key);
 	}
 
 	private static void printCandidatesToChat(MinecraftClient client, String hintKey) {
