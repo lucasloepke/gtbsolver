@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "gtbsolver",
+  "version": "${version}",
+  "name": "GTB Solver",
+  "description": "Client-side Hypixel Guess The Build hint solver.",
+  "authors": [
+    "lucasloepke"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.lucasloepke.gtbsolver.GtbSolverClient"
+    ]
+  },
+  "mixins": [
+    "gtbsolver.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.1",
+    "minecraft": "1.21.11",
+    "fabric-api": "*"
+  }
+}

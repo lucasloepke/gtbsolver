@@ -1,0 +1,15 @@
+.gradle/
+build/
+out/
+.idea/
+*.iml
+
+# Fabric run dirs
+run/
+runs/
+
+# Local JDK downloads
+.jdk/
+
+# OS
+.DS_Store
