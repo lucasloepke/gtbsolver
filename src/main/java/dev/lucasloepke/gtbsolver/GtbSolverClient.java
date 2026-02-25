@@ -125,17 +125,34 @@ public final class GtbSolverClient implements ClientModInitializer {
 
 		List<String> matches = Wordlist.findMatches(pattern, 25);
 
+		if (matches.isEmpty()) {
+			MutableText header = Text.literal("[GTB Solver] ").formatted(Formatting.GRAY)
+				.append(Text.literal(pattern.pretty()).formatted(Formatting.YELLOW))
+				.append(Text.literal("  showing: ").formatted(Formatting.DARK_GRAY))
+				.append(Text.literal("0").formatted(Formatting.AQUA));
+			client.inGameHud.getChatHud().addMessage(header);
+			client.inGameHud.getChatHud().addMessage(Text.literal("No matches.").formatted(Formatting.RED));
+			return;
+		}
+
+		// Single match: auto-guess and notify
+		if (matches.size() == 1 && client.player != null) {
+			String word = matches.get(0);
+			client.player.networkHandler.sendChatMessage(word);
+			client.inGameHud.getChatHud().addMessage(
+				Text.literal("[GTB Solver] ").formatted(Formatting.GRAY)
+					.append(Text.literal("Auto-guessed: ").formatted(Formatting.DARK_GRAY))
+					.append(Text.literal(word).formatted(Formatting.GREEN))
+			);
+			return;
+		}
+
 		MutableText header = Text.literal("[GTB Solver] ").formatted(Formatting.GRAY)
 			.append(Text.literal(pattern.pretty()).formatted(Formatting.YELLOW))
 			.append(Text.literal("  showing: ").formatted(Formatting.DARK_GRAY))
 			.append(Text.literal(String.valueOf(matches.size())).formatted(Formatting.AQUA));
 
 		client.inGameHud.getChatHud().addMessage(header);
-
-		if (matches.isEmpty()) {
-			client.inGameHud.getChatHud().addMessage(Text.literal("No matches.").formatted(Formatting.RED));
-			return;
-		}
 
 		MutableText line = Text.empty();
 		int shown = 0;

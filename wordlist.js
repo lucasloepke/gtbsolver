@@ -1662,6 +1662,7 @@ var arrayData = [
 	"Sunlight",
 	"Sunrise",
 	"Sunset",
+	"Superhero",
 	"Super Hero",
 	"Super Mario",
 	"Supermarket",
