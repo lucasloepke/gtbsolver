@@ -81,6 +81,15 @@ public final class HintPattern {
 			if (c == '_' || Character.isLetterOrDigit(c) || c == '\'' || c == '-' || c == '&') continue;
 			return null;
 		}
+
+		// Heuristic: occasionally a stray lowercase 'e' from Minecraft color code "§e"
+		// ends up as a leading character before the real pattern, e.g. "e__g_ h__l_".
+		// If we see exactly this shape (leading 'e' followed by an underscore) we
+		// strip that 'e' so the pattern matches the visual hint "__g_ h__l_".
+		if (s.length() >= 2 && s.charAt(0) == 'e' && s.charAt(1) == '_' && s.contains("_")) {
+			s = s.substring(1);
+		}
+
 		return s;
 	}
 
