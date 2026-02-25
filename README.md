@@ -1,6 +1,6 @@
 ## GTB Solver (Fabric 1.21.11)
 
-Client-side Hypixel **Guess The Build** solver for **Minecraft 1.21.11**.
+Client-side Hypixel **Guess The Build** solver for **Minecraft Fabric 1.21.11**.
 
 ### What it does
 
