@@ -11,9 +11,9 @@ Client-side Hypixel **Guess The Build** solver for **Minecraft Fabric 1.21.11**.
 
 ### Commands
 
-- **`/gtbsolve`**: print candidates for the latest seen hint again
-- **`/gtbsolve toggle`**: toggle auto-output on hint change
-- **`/gtbsolve debug`**: debug tool to print action bar
+- **`/gtbs`**: print candidates for the latest seen hint again
+- **`/gtbs toggle`**: toggle auto-output on hint change
+- **`/gtbs debug`**: debug tool to print action bar
 
 ### Build
 

@@ -40,7 +40,7 @@ public final class GtbSolverClient implements ClientModInitializer {
 				)
 			);
 
-			dispatcher.register(literal("gtbsolve")
+			dispatcher.register(literal("gtbs")
 				.executes(ctx -> {
 					MinecraftClient client = MinecraftClient.getInstance();
 					if (lastHintKey == null) {
@@ -174,7 +174,7 @@ public final class GtbSolverClient implements ClientModInitializer {
 
 		client.inGameHud.getChatHud().addMessage(line);
 		client.inGameHud.getChatHud().addMessage(
-			Text.literal("Tip: /gtbsolve toggle").formatted(Formatting.DARK_GRAY)
+			Text.literal("Tip: /gtbs toggle").formatted(Formatting.DARK_GRAY)
 		);
 	}
 }
