@@ -33,7 +33,7 @@ public final class GtbSolverClient implements ClientModInitializer {
 					.executes(ctx -> {
 						MinecraftClient client = MinecraftClient.getInstance();
 						if (client.player == null) return 0;
-						String word = getString(ctx, "word");
+						String word = getString(ctx, "word").toLowerCase();
 						client.player.networkHandler.sendChatMessage(word);
 						return 1;
 					})
@@ -123,13 +123,14 @@ public final class GtbSolverClient implements ClientModInitializer {
 		HintPattern pattern = HintPattern.fromKey(hintKey);
 		if (pattern == null) return;
 
-		List<String> matches = Wordlist.findMatches(pattern, 25);
+		List<String> matches = Wordlist.findMatches(pattern, Integer.MAX_VALUE);
 
+		int wordLength = pattern.toKey().length();
 		if (matches.isEmpty()) {
 			MutableText header = Text.literal("[GTB Solver] ").formatted(Formatting.GRAY)
 				.append(Text.literal(pattern.pretty()).formatted(Formatting.YELLOW))
-				.append(Text.literal("  showing: ").formatted(Formatting.DARK_GRAY))
-				.append(Text.literal("0").formatted(Formatting.AQUA));
+				.append(Text.literal("  length: ").formatted(Formatting.DARK_GRAY))
+				.append(Text.literal(String.valueOf(wordLength)).formatted(Formatting.AQUA));
 			client.inGameHud.getChatHud().addMessage(header);
 			client.inGameHud.getChatHud().addMessage(Text.literal("No matches.").formatted(Formatting.RED));
 			return;
@@ -137,7 +138,7 @@ public final class GtbSolverClient implements ClientModInitializer {
 
 		// Single match: auto-guess and notify
 		if (matches.size() == 1 && client.player != null) {
-			String word = matches.get(0);
+			String word = matches.get(0).toLowerCase();
 			client.player.networkHandler.sendChatMessage(word);
 			client.inGameHud.getChatHud().addMessage(
 				Text.literal("[GTB Solver] ").formatted(Formatting.GRAY)
@@ -149,20 +150,17 @@ public final class GtbSolverClient implements ClientModInitializer {
 
 		MutableText header = Text.literal("[GTB Solver] ").formatted(Formatting.GRAY)
 			.append(Text.literal(pattern.pretty()).formatted(Formatting.YELLOW))
-			.append(Text.literal("  showing: ").formatted(Formatting.DARK_GRAY))
-			.append(Text.literal(String.valueOf(matches.size())).formatted(Formatting.AQUA));
+			.append(Text.literal("  length: ").formatted(Formatting.DARK_GRAY))
+			.append(Text.literal(String.valueOf(wordLength)).formatted(Formatting.AQUA));
 
 		client.inGameHud.getChatHud().addMessage(header);
 
 		MutableText line = Text.empty();
-		int shown = 0;
 		for (String word : matches) {
-			if (shown >= 25) break;
-
 			MutableText clickable = Text.literal(word)
 				.setStyle(Style.EMPTY
 					.withColor(Formatting.GREEN)
-					.withClickEvent(new ClickEvent.RunCommand("/gtbguess " + word))
+					.withClickEvent(new ClickEvent.RunCommand("/gtbguess " + word.toLowerCase()))
 					.withHoverEvent(new HoverEvent.ShowText(
 						Text.literal("Click to guess: ").formatted(Formatting.GRAY)
 							.append(Text.literal(word).formatted(Formatting.GREEN))))
@@ -172,7 +170,6 @@ public final class GtbSolverClient implements ClientModInitializer {
 				line = line.append(Text.literal("  ").formatted(Formatting.DARK_GRAY));
 			}
 			line = line.append(clickable);
-			shown++;
 		}
 
 		client.inGameHud.getChatHud().addMessage(line);
