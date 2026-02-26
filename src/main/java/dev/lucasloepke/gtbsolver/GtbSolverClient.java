@@ -167,7 +167,7 @@ public final class GtbSolverClient implements ClientModInitializer {
 				);
 
 			if (!line.getString().isEmpty()) {
-				line = line.append(Text.literal("  ").formatted(Formatting.DARK_GRAY));
+				line = line.append(Text.literal("   ").formatted(Formatting.DARK_GRAY));
 			}
 			line = line.append(clickable);
 		}

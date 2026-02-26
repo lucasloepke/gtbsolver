@@ -109,45 +109,11 @@ public final class HintParser {
 		}
 		if (best != null) cleaned = best;
 
-		// Normalize away any leftover color-code artifacts (e.g. a stray leading 'e'
-		// from '§e' that sometimes sneaks in before the real pattern).
-		cleaned = stripLeadingColorE(cleaned);
-
 		return cleaned;
 	}
 
 	private static boolean isHintChar(char c) {
 		return c == ' ' || c == '_' || Character.isLetterOrDigit(c) || c == '\'' || c == '-' || c == '&';
-	}
-
-	/**
-	 * Some Hypixel themes are color-coded like "§e__g_ H__l_". After we strip non-word
-	 * characters, this can leave a bogus leading 'e' / 'E' in front of the real pattern
-	 * (e.g. "e__g_ H__l_"), which then shows up as an extra "E" in our pretty-printed
-	 * hint. This helper trims that artifact for both the Hypixel-specific and generic
-	 * parsing paths.
-	 */
-	private static String stripLeadingColorE(String raw) {
-		if (raw == null) return null;
-		String s = raw.trim();
-		if (s.length() < 2 || !s.contains("_")) return raw;
-
-		char first = s.charAt(0);
-		if (first != 'e' && first != 'E') return raw;
-
-		// Look for the first non-space character after the leading 'e'/'E'.
-		int i = 1;
-		while (i < s.length() && s.charAt(i) == ' ') {
-			i++;
-		}
-
-		// If the next significant character is an underscore, this 'e' is almost certainly
-		// the tail of a color code like '§e', not part of the actual hint. Drop it.
-		if (i < s.length() && s.charAt(i) == '_') {
-			return s.substring(1).trim();
-		}
-
-		return raw;
 	}
 
 	/**
@@ -185,9 +151,7 @@ public final class HintParser {
 
 		String pattern = String.join(" ", wordPatterns);
 
-		// Apply the same color-code cleanup heuristic used for Hypixel theme parsing,
-		// in case we hit this generic path on a server that uses '§e' style colors.
-		return stripLeadingColorE(pattern);
+		return pattern;
 	}
 }
 
