@@ -1692,6 +1692,7 @@ var arrayData = [
 	"Table Cloth",
 	"Table Tennis",
 	"Tablet",
+	"Taco",
 	"Tail",
 	"Talent Show",
 	"Tall",
