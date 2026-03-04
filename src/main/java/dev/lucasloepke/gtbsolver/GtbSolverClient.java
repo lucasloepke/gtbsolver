@@ -28,32 +28,33 @@ public final class GtbSolverClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-			dispatcher.register(literal("gtbguess")
-				.then(argument("word", greedyString())
+			dispatcher.register(literal("gtbs")
+				.then(literal("guess")
+					.then(argument("word", greedyString())
+						.executes(ctx -> {
+							MinecraftClient client = MinecraftClient.getInstance();
+							if (client.player == null) return 0;
+							String word = getString(ctx, "word").toLowerCase();
+							client.player.networkHandler.sendChatMessage(word);
+							return 1;
+						})
+					)
+				)
+				.then(literal("hints")
 					.executes(ctx -> {
 						MinecraftClient client = MinecraftClient.getInstance();
-						if (client.player == null) return 0;
-						String word = getString(ctx, "word").toLowerCase();
-						client.player.networkHandler.sendChatMessage(word);
+						if (lastHintKey == null) {
+							if (client != null && client.inGameHud != null) {
+								client.inGameHud.getChatHud().addMessage(
+									Text.literal("[GTBS] No theme hint detected yet.").formatted(Formatting.WHITE)
+								);
+							}
+							return 1;
+						}
+						printCandidatesToChat(client, lastHintKey, false);
 						return 1;
 					})
 				)
-			);
-
-			dispatcher.register(literal("gtbs")
-				.executes(ctx -> {
-					MinecraftClient client = MinecraftClient.getInstance();
-					if (lastHintKey == null) {
-						if (client != null && client.inGameHud != null) {
-							client.inGameHud.getChatHud().addMessage(
-								Text.literal("[GTB Solver] No theme hint detected yet.").formatted(Formatting.RED)
-							);
-						}
-						return 1;
-					}
-					printCandidatesToChat(client, lastHintKey);
-					return 1;
-				})
 				.then(literal("debug")
 					.executes(ctx -> {
 						MinecraftClient client = MinecraftClient.getInstance();
@@ -61,12 +62,12 @@ public final class GtbSolverClient implements ClientModInitializer {
 							String raw = lastOverlayRaw;
 							if (raw == null || raw.isBlank()) {
 								client.inGameHud.getChatHud().addMessage(
-									Text.literal("[GTB debug] No overlay captured yet.").formatted(Formatting.DARK_GRAY)
+									Text.literal("[GTBS] No overlay captured yet.").formatted(Formatting.WHITE)
 								);
 							} else {
 								client.inGameHud.getChatHud().addMessage(
-									Text.literal("[GTB debug] overlay: ").formatted(Formatting.DARK_GRAY)
-										.append(Text.literal(raw).formatted(Formatting.YELLOW))
+									Text.literal("[GTBS] overlay: ").formatted(Formatting.WHITE)
+										.append(Text.literal(raw).formatted(Formatting.WHITE))
 								);
 							}
 						}
@@ -76,9 +77,8 @@ public final class GtbSolverClient implements ClientModInitializer {
 				.then(literal("toggle")
 					.executes(ctx -> {
 						autoOutputEnabled = !autoOutputEnabled;
-						sendClientMessage(ctx.getSource(), Text.literal("GTB Solver auto output: ")
-							.append(Text.literal(autoOutputEnabled ? "ON" : "OFF")
-								.formatted(autoOutputEnabled ? Formatting.GREEN : Formatting.RED)));
+						sendClientMessage(ctx.getSource(), Text.literal("Auto output: ")
+							.append(Text.literal(autoOutputEnabled ? "ON" : "OFF").formatted(Formatting.WHITE)));
 						return 1;
 					})
 				)
@@ -87,7 +87,7 @@ public final class GtbSolverClient implements ClientModInitializer {
 	}
 
 	private static void sendClientMessage(FabricClientCommandSource source, Text msg) {
-		source.sendFeedback(Text.literal("[GTB Solver] ").formatted(Formatting.GRAY).append(msg));
+		source.sendFeedback(Text.literal("[GTBS] ").formatted(Formatting.WHITE).append(msg));
 	}
 
 	/**
@@ -114,10 +114,10 @@ public final class GtbSolverClient implements ClientModInitializer {
 		lastHintKey = key;
 
 		if (!autoOutputEnabled) return;
-		printCandidatesToChat(client, key);
+		printCandidatesToChat(client, key, true);
 	}
 
-	private static void printCandidatesToChat(MinecraftClient client, String hintKey) {
+	private static void printCandidatesToChat(MinecraftClient client, String hintKey, boolean allowAutoGuess) {
 		if (client == null || client.inGameHud == null || hintKey == null) return;
 
 		HintPattern pattern = HintPattern.fromKey(hintKey);
@@ -127,54 +127,46 @@ public final class GtbSolverClient implements ClientModInitializer {
 
 		int wordLength = pattern.toKey().length();
 		if (matches.isEmpty()) {
-			MutableText header = Text.literal("[GTB Solver] ").formatted(Formatting.GRAY)
-				.append(Text.literal(pattern.pretty()).formatted(Formatting.YELLOW))
-				.append(Text.literal("  length: ").formatted(Formatting.DARK_GRAY))
-				.append(Text.literal(String.valueOf(wordLength)).formatted(Formatting.AQUA));
-			client.inGameHud.getChatHud().addMessage(header);
-			client.inGameHud.getChatHud().addMessage(Text.literal("No matches.").formatted(Formatting.RED));
+			client.inGameHud.getChatHud().addMessage(
+				Text.literal("[GTBS] ").formatted(Formatting.WHITE)
+					.append(Text.literal(pattern.pretty() + "  length: " + wordLength + "  No matches.").formatted(Formatting.WHITE))
+			);
 			return;
 		}
 
-		// Single match: auto-guess and notify
-		if (matches.size() == 1 && client.player != null) {
+		// Single match: auto-guess and notify (only when allowAutoGuess)
+		if (allowAutoGuess && matches.size() == 1 && client.player != null) {
 			String word = matches.get(0).toLowerCase();
 			client.player.networkHandler.sendChatMessage(word);
 			client.inGameHud.getChatHud().addMessage(
-				Text.literal("[GTB Solver] ").formatted(Formatting.GRAY)
-					.append(Text.literal("Auto-guessed: ").formatted(Formatting.DARK_GRAY))
+				Text.literal("[GTBS] Auto-guessed: ").formatted(Formatting.WHITE)
 					.append(Text.literal(word).formatted(Formatting.GREEN))
 			);
 			return;
 		}
 
-		MutableText header = Text.literal("[GTB Solver] ").formatted(Formatting.GRAY)
-			.append(Text.literal(pattern.pretty()).formatted(Formatting.YELLOW))
-			.append(Text.literal("  length: ").formatted(Formatting.DARK_GRAY))
-			.append(Text.literal(String.valueOf(wordLength)).formatted(Formatting.AQUA));
-
-		client.inGameHud.getChatHud().addMessage(header);
+		client.inGameHud.getChatHud().addMessage(
+			Text.literal("[GTBS] ").formatted(Formatting.WHITE)
+				.append(Text.literal(pattern.pretty() + "  length: " + wordLength).formatted(Formatting.WHITE))
+		);
 
 		MutableText line = Text.empty();
 		for (String word : matches) {
 			MutableText clickable = Text.literal(word)
 				.setStyle(Style.EMPTY
 					.withColor(Formatting.GREEN)
-					.withClickEvent(new ClickEvent.RunCommand("/gtbguess " + word.toLowerCase()))
+					.withClickEvent(new ClickEvent.RunCommand("/gtbs guess " + word.toLowerCase()))
 					.withHoverEvent(new HoverEvent.ShowText(
-						Text.literal("Click to guess: ").formatted(Formatting.GRAY)
+						Text.literal("[GTBS] Click to guess: ").formatted(Formatting.WHITE)
 							.append(Text.literal(word).formatted(Formatting.GREEN))))
 				);
 
 			if (!line.getString().isEmpty()) {
-				line = line.append(Text.literal("   ").formatted(Formatting.DARK_GRAY));
+				line = line.append(Text.literal("   ").formatted(Formatting.WHITE));
 			}
 			line = line.append(clickable);
 		}
 
 		client.inGameHud.getChatHud().addMessage(line);
-		client.inGameHud.getChatHud().addMessage(
-			Text.literal("Tip: /gtbs toggle").formatted(Formatting.DARK_GRAY)
-		);
 	}
 }
