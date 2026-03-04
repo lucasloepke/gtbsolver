@@ -11,9 +11,10 @@ Client-side Hypixel **Guess The Build** solver for **Minecraft Fabric 1.21.11**.
 
 ### Commands
 
-- **`/gtbs`**: print candidates for the latest seen hint again
-- **`/gtbs toggle`**: toggle auto-output on hint change
-- **`/gtbs debug`**: debug tool to print action bar
+- **`/gtbs hints`**: print candidates for the latest seen hint again (using the last action-bar pattern)
+- **`/gtbs toggle`**: toggle automatic chat output of candidates whenever the hint changes
+- **`/gtbs debug`**: debug tool to print the last captured action-bar overlay
+- **`/gtbs guess <word>`**: manually send a guess (same as clicking one of the suggested words)
 
 ### Build
 
