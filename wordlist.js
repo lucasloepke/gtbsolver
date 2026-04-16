@@ -372,6 +372,7 @@ var arrayData = [
 	"Clock Tower",
 	"Closet",
 	"Clouds",
+	"Clover",
 	"Clown",
 	"Clown Fish",
 	"Coat",
