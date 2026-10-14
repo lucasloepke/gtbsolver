@@ -3,7 +3,7 @@
   "package": "dev.lucasloepke.gtbsolver.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "InGameHudMixin"
+    "HudMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,18 +1,17 @@
 package dev.lucasloepke.gtbsolver.mixin;
 
 import dev.lucasloepke.gtbsolver.GtbSolverClient;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Hud;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(InGameHud.class)
-public final class InGameHudMixin {
+@Mixin(Hud.class)
+public final class HudMixin {
 	@Inject(method = "setOverlayMessage", at = @At("HEAD"))
-	private void gtbsolver$onSetOverlayMessage(Text message, boolean tinted, CallbackInfo ci) {
+	private void gtbsolver$onSetOverlayMessage(Component message, boolean animate, CallbackInfo ci) {
 		GtbSolverClient.onActionBarMessage(message);
 	}
 }
-

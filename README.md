@@ -1,6 +1,6 @@
-## GTB Solver (Fabric 1.21.11)
+## GTB Solver (Fabric 26.3)
 
-Client-side Hypixel **Guess The Build** solver for **Minecraft Fabric 1.21.11**.
+Client-side Hypixel **Guess The Build** solver for **Minecraft Fabric 26.3**.
 
 ### What it does
 
@@ -18,7 +18,7 @@ Client-side Hypixel **Guess The Build** solver for **Minecraft Fabric 1.21.11**.
 
 ### Build
 
-Once the Gradle wrapper is in place, build with:
+Requires **Java 25**. Once the Gradle wrapper is in place, build with:
 
 ```bash
 ./gradlew build

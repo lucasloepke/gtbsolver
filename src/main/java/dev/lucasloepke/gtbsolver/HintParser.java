@@ -1,6 +1,6 @@
 package dev.lucasloepke.gtbsolver;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public final class HintParser {
 	// Tries to find a "letter-by-letter" hint region containing underscores/letters/spaces
 	private static final Pattern HINT_REGION = Pattern.compile("([A-Za-z0-9_\\-\\'&]\\s+){2,}[A-Za-z0-9_\\-\\'&]|[_A-Za-z0-9\\-\\'& ]{3,}");
 
-	public static HintPattern tryParse(Text actionBarText) {
+	public static HintPattern tryParse(Component actionBarText) {
 		if (actionBarText == null) return null;
 		String plain = actionBarText.getString();
 		if (plain == null || plain.isBlank()) return null;
@@ -154,4 +154,3 @@ public final class HintParser {
 		return pattern;
 	}
 }
-
